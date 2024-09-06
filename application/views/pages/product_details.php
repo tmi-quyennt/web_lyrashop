@@ -269,23 +269,33 @@
 								<div class="col-sm-12">
 									<ul>
 										<li><a href=""><i class="fa fa-user"></i>Quyên User</a></li>
-										<li><a href=""><i class="fa fa-clock-o"></i>12:41 AM</a></li>
-										<li><a href=""><i class="fa fa-calendar-o"></i>30 AUG 2024</a></li>
+										<div class="text-muted small mb-2">
+												<i class="fa fa-clock-o"></i> 12:41 AM
+												<i class="fa fa-calendar-o ml-2"></i> 30 AUG 2024
+											</div>
 									</ul>
 									<p>Áo baby tee phối ren thêu tim của LYRA thật sự rất xinh! Chất liệu cotton mềm mại, thoáng khí, rất thoải mái khi mặc. Phần ren và thêu tim ở cổ áo tạo điểm nhấn rất đáng yêu. Tôi hoàn toàn hài lòng và chắc chắn sẽ mua thêm các màu khác.</p>
-									<p><b>Viết đánh giá của bạn:</b></p>
-									
-									<form action="#">
-										<span>
-											<input type="text" placeholder="Họ và tên"/>
-											<input type="email" placeholder="Địa chỉ"/>
-										</span>
-										<textarea name="" ></textarea>
-										<b>Đánh giá: </b> <img src="images/product-details/rating.png" alt="" />
-										<button type="button" class="btn btn-default pull-right">
-											Lưu
-										</button>
-									</form>
+									<div class="review-form-box p-4 bg-white rounded shadow-sm">
+										<h4 class="mb-3 mt-5">Viết đánh giá của bạn</h4>
+										<form action="#">
+											<div class="form-row">
+												<div class="form-group col-md-6">
+													<input type="text" class="form-control" placeholder="Họ và tên"/>
+												</div>
+												<div class="form-group col-md-6">
+													<input type="email" class="form-control" placeholder="Địa chỉ email"/>
+												</div>
+											</div>
+											<div class="form-group">
+												<textarea class="form-control" rows="4" placeholder="Nhập đánh giá của bạn"></textarea>
+											</div>
+											<div class="form-group">
+												<label class="mr-2"><b>Đánh giá:</b></label>
+												<img src="images/product-details/rating.png" alt="rating" />
+											</div>
+											<button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+										</form>
+									</div>
 								</div>
 							</div>
 							

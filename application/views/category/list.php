@@ -1,4 +1,4 @@
-<div class ='container'>
+<div class ='mx-auto pb-4' style="width: 1440px;">
     <div class="card">
     <div class="card-header">
         Danh sách danh mục 
@@ -15,7 +15,7 @@
             }
     ?> 
     <div class="card-body">
-        <a href="<?php echo base_url('category/create') ?>" class="btn btn-primary">Thêm danh mục </a>
+        <a href="<?php echo base_url('category/create') ?>" class="btn btn-primary mb-2">Thêm danh mục </a>
             <table class="table table-striped">
         <thead>
             <tr>
