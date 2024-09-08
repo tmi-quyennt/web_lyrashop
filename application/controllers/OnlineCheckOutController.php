@@ -1,6 +1,8 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
+require 'vendor/autoload.php';
+
 class OnlineCheckOutController extends CI_Controller
 {
 
@@ -165,53 +167,53 @@ class OnlineCheckOutController extends CI_Controller
     // }
 
     public function online_checkout()
-{
-    $this->load->library('cart');
-    $subtotal = 0;
-    $total = 0;
-    foreach ($this->cart->contents() as $items) {
-        $subtotal = $items['qty'] * $items['price'];
-        $total += $subtotal;
-    }
+    {
+        $this->load->library('cart');
+        $subtotal = 0;
+        $total = 0;
+        foreach ($this->cart->contents() as $items) {
+            $subtotal = $items['qty'] * $items['price'];
+            $total += $subtotal;
+        }
 
-    if (isset($_POST['cod'])) {
-        $this->form_validation->set_rules('email', 'Email', 'trim|required', ['required' => 'Bạn chưa điền %s']);
-        $this->form_validation->set_rules('phone', 'Phone', 'trim|required', ['required' => 'Bạn chưa điền %s']);
-        $this->form_validation->set_rules('name', 'Name', 'trim|required', ['required' => 'Bạn chưa điền %s']);
-        $this->form_validation->set_rules('address', 'Address', 'trim|required', ['required' => 'Bạn chưa điền %s']);
+        if (isset($_POST['cod'])) {
+            $this->form_validation->set_rules('email', 'Email', 'trim|required', ['required' => 'Bạn chưa điền %s']);
+            $this->form_validation->set_rules('phone', 'Phone', 'trim|required', ['required' => 'Bạn chưa điền %s']);
+            $this->form_validation->set_rules('name', 'Name', 'trim|required', ['required' => 'Bạn chưa điền %s']);
+            $this->form_validation->set_rules('address', 'Address', 'trim|required', ['required' => 'Bạn chưa điền %s']);
 
-        if ($this->form_validation->run() == TRUE) {
-            $email = $this->input->post('email');
-            $phone = $this->input->post('phone');
-            $name = $this->input->post('name');
-            $address = $this->input->post('address');
-            $data = [
-                'name' => $name,
-                'email' => $email,
-                'method' => 'cod',
-                'address' => $address,
-                'phone' => $phone,
-            ];
-
-            $this->load->model('LoginModel');
-            $this->load->model('ProductModel'); // Load thêm model Sản phẩm
-
-            $result = $this->LoginModel->NewShipping($data);
-
-            if ($result) {
-                // order
-                $order_code = rand(00, 9999);
-                $customer_id = $this->session->userdata('LoggedInCustomer');
-
-                $data_order = [
-                    'order_code' => $order_code,
-                    'ship_id' => $result,
-                    'status' => 1,
-                    'customer_id' => $customer_id['customer_id'],
+            if ($this->form_validation->run() == TRUE) {
+                $email = $this->input->post('email');
+                $phone = $this->input->post('phone');
+                $name = $this->input->post('name');
+                $address = $this->input->post('address');
+                $data = [
+                    'name' => $name,
+                    'email' => $email,
+                    'method' => 'cod',
+                    'address' => $address,
+                    'phone' => $phone,
                 ];
-                $insert_order = $this->LoginModel->insert_order($data_order);
 
-                $order_id = $this->db->insert_id();
+                $this->load->model('LoginModel');
+                $this->load->model('ProductModel'); // Load thêm model Sản phẩm
+
+                $result = $this->LoginModel->NewShipping($data);
+
+                if ($result) {
+                    // order
+                    $order_code = rand(00, 9999);
+                    $customer_id = $this->session->userdata('LoggedInCustomer');
+
+                    $data_order = [
+                        'order_code' => $order_code,
+                        'ship_id' => $result,
+                        'status' => 1,
+                        'customer_id' => $customer_id['customer_id'],
+                    ];
+                    $insert_order = $this->LoginModel->insert_order($data_order);
+
+                    $order_id = $this->db->insert_id();
 
                 // order details & giảm số lượng sản phẩm
                 foreach ($this->cart->contents() as $items) {
@@ -280,21 +282,57 @@ class OnlineCheckOutController extends CI_Controller
         $result = $this->execPostRequest($endpoint, json_encode($data));
         $jsonResult = json_decode($result, true);
 
-        // Kiểm tra nếu phản hồi từ MoMo chứa 'payUrl'
-        if (is_array($jsonResult) && isset($jsonResult['payUrl'])) {
-            header('Location: ' . $jsonResult['payUrl']);
-            exit(); // Thêm exit để dừng việc thực hiện script sau khi chuyển hướng
-        } else {
-            // Ghi log chi tiết lỗi
-            error_log('MoMo Error: ' . print_r($jsonResult, true));
-            $this->session->set_flashdata('error', 'Có lỗi xảy ra trong quá trình thanh toán MoMo.');
-            redirect(base_url('/checkout'));
+            // Kiểm tra nếu phản hồi từ MoMo chứa 'payUrl'
+            if (is_array($jsonResult) && isset($jsonResult['payUrl'])) {
+                header('Location: ' . $jsonResult['payUrl']);
+                exit(); // Thêm exit để dừng việc thực hiện script sau khi chuyển hướng
+            } else {
+                // Ghi log chi tiết lỗi
+                error_log('MoMo Error: ' . print_r($jsonResult, true));
+                $this->session->set_flashdata('error', 'Có lỗi xảy ra trong quá trình thanh toán MoMo.');
+                redirect(base_url('/checkout'));
+            }
+        } elseif (isset($_POST['stripeToken'])) {
+            
+            \Stripe\Stripe::setApiKey('sk_test_51Pkc6WRw8xguDrzhVxInQQUyqz7Ef0vHDM80nhX37M8stKwer5YNysj7OsX0C5vnOpKpfJAeMZf7rP06nCdx1n2600TO2ugFue'); // Thay YOUR_STRIPE_SECRET_KEY bằng khóa bí mật của bạn
+            header('Content-Type: application/json');
+            try {
+                $checkout_session = \Stripe\Checkout\Session::create([
+                    'payment_method_types' => ['card'], // Các phương thức thanh toán hỗ trợ
+                    'line_items' => [[
+                        'price_data' => [
+                            'currency' => 'vnd',
+                            'product_data' => [
+                                'name' => 'Tên sản phẩm',
+                            ],
+                            'unit_amount' => 200000, // Giá sản phẩm tính bằng cent
+                        ],
+                        'quantity' => 1,
+                    ]],
+                    'mode' => 'payment',
+                    'success_url' => base_url('/thanks') , // Trang redirect khi thanh toán thành công
+                    'cancel_url' => base_url('/thanks'),   // Trang redirect khi hủy thanh toán
+                ]);
+                header("Location: " . $checkout_session->url);
+                exit();
+            } catch (\Stripe\Exception\CardException $e) {
+                // Xử lý lỗi thẻ
+                $this->session->set_flashdata('error', 'Lỗi thanh toán: ' . $e->getMessage());
+                redirect(base_url('/gio-hang'));
+            } catch (\Exception $e) {
+                // Xử lý lỗi chung
+                $this->session->set_flashdata('error', 'Lỗi thanh toán: ' . $e->getMessage());
+                redirect(base_url('/gio-hang'));
+            }
         }
-    }elseif(isset($_POST['vnpay'])){
-        
-
     }
-}
+
+    private function processOrder($charge)
+    {
+        // Logic để lưu thông tin đơn hàng vào cơ sở dữ liệu
+        // Bạn có thể sử dụng logic tương tự như trong phần COD
+        // ...
+    }
 
     public function checkout()
     {

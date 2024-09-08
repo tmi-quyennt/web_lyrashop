@@ -156,7 +156,7 @@
 								<div style="display: flex; gap: 10px; padding: 20px">
                                     <button type="submit" name="cod" class="btn btn-default">Thanh toán COD</button>
                                     <button type="submit" name="payUrl" class="btn btn-danger">Thanh toán Momo</button>
-                                    <button type="submit" name="vnpay" class="btn btn-success">Thanh toán VnPay</button>
+                                    <button type="submit" name="stripeToken" class="btn btn-success" id="checkout-button">Thanh toán VnPay</button>
                                 </div>
 							</form>
 						</div><!--/login form-->
@@ -179,6 +179,7 @@
             <?php endif; ?>
         </div>
     </div>
+    <script src="https://js.stripe.com/v3/"></script>
     <script>
         function updateCart(input) {
             var form = input.closest('.update-cart-form');
@@ -255,5 +256,30 @@
                 console.error('Error:', error);
             });
         }
+
+
+        var stripe = Stripe('pk_test_51Pkc6WRw8xguDrzhSg2nRvjZCQMfObBC1wISqSupyZfBHxHfkzrZJODaDLzkOcKAGSYK1L0pdlsA0v80PrlH5bjk00KumbpBDJ'); // Sử dụng Publishable key
+
+        var checkoutButton = document.getElementById('checkout-button');
+
+        checkoutButton.addEventListener('click', function() {
+            fetch('/create-checkout-session.php', {
+                method: 'POST',
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(session) {
+                return stripe.redirectToCheckout({ sessionId: session.id });
+            })
+            .then(function(result) {
+                if (result.error) {
+                    alert(result.error.message);
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+            });
+        });
     </script>
 </section>
