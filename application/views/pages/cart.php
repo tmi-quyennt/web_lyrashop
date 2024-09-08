@@ -156,7 +156,7 @@
 								<div style="display: flex; gap: 10px; padding: 20px">
                                     <button type="submit" name="cod" class="btn btn-default">Thanh toán COD</button>
                                     <button type="submit" name="payUrl" class="btn btn-danger">Thanh toán Momo</button>
-                                    <button type="submit" name="stripeToken" class="btn btn-success" id="checkout-button">Thanh toán VnPay</button>
+                                    <button type="submit" name="stripeToken" class="btn btn-success" id="checkout-button">Thanh toán bằng thẻ ngân hàng</button>
                                 </div>
 							</form>
 						</div><!--/login form-->
