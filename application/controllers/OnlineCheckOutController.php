@@ -201,10 +201,13 @@ class OnlineCheckOutController extends CI_Controller
             if ($result) {
                 // order
                 $order_code = rand(00, 9999);
+                $customer_id = $this->session->userdata('LoggedInCustomer');
+
                 $data_order = [
                     'order_code' => $order_code,
                     'ship_id' => $result,
                     'status' => 1,
+                    'customer_id' => $customer_id['customer_id'],
                 ];
                 $insert_order = $this->LoginModel->insert_order($data_order);
 
@@ -212,12 +215,19 @@ class OnlineCheckOutController extends CI_Controller
 
                 // order details & giảm số lượng sản phẩm
                 foreach ($this->cart->contents() as $items) {
+                    $color_id = $this->IndexModel->getColorIdByNameAndProductId($items['options']['color_name'], $items['id']);
+    
+                    // Lấy size_id dựa trên size_name và product_id
+                    $size_id = $this->IndexModel->getSizeIdByNameAndProductId($items['options']['size_name'], $items['id']);
+                
                     $data_order_details = [
                         'order_code' => $order_code,
                         'product_id' => $items['id'],
                         'quantity' => $items['qty'],
                         'order_id' => $order_id,
-                    ];
+                        'product_color_id' => $color_id,
+                        'product_size_id' => $size_id,
+                        ];
                     $this->LoginModel->insert_order_details($data_order_details);
 
                     // Gọi hàm trừ số lượng sản phẩm
@@ -280,6 +290,9 @@ class OnlineCheckOutController extends CI_Controller
             $this->session->set_flashdata('error', 'Có lỗi xảy ra trong quá trình thanh toán MoMo.');
             redirect(base_url('/checkout'));
         }
+    }elseif(isset($_POST['vnpay'])){
+        
+
     }
 }
 

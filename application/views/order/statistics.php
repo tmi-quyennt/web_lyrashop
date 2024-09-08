@@ -140,7 +140,7 @@
             </div>
             <div class="stat-box total-revenue">
                 <h2>Tổng doanh thu</h2>
-                <div class="value"><?= number_format($total_revenue, 0, ',', '.'); ?> VND</div>
+                <div class="value"><?= number_format((float)$total_revenue, 0, ',', '.'); ?> VND</div>
             </div>
             <div class="stat-box total-products-in-stock">
                 <h2>Tổng số sản phẩm trong kho</h2>

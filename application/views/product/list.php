@@ -40,7 +40,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach($product as $key => $pro): ?>
+                        <?php foreach($allproduct as $key => $pro): ?>
                         <tr>
                             <th scope="row"><?php echo $key ?></th>
                             <td><?php echo $pro->title ?></td>

@@ -49,8 +49,6 @@
 				<div class="col-sm-9 padding-right">
                     <?php
                     foreach($product_details as $key => $pro){
-
-                    
                     ?>
 					<div class="product-details"><!--product-details-->
 						<div class="col-sm-5">
@@ -78,8 +76,41 @@
 								<img src="images/product-details/new.jpg" class="newarrival" alt="" />
 								<h2><?php echo $pro->title ?></h2>
                                 <input type="hidden" value="<?php echo $pro->product_id ?>" name="product_id">
-
-
+							
+								<!--  show information size and colors from database -->
+								<div class="size-color">
+									<div class="size">
+										<label>Kích thước</label>
+										<select name="size" class="form-control" style="width: 60%;">
+											<option value="" disabled selected>Chọn kích thước</option>
+											<?php foreach ($sizes as $size): ?>
+												<option value="<?php echo $size->size_name; ?>"><?php echo $size->size_name; ?></option>
+											<?php endforeach; ?>
+										</select>
+									</div>
+									<div class="color">
+									<div class="product-colors mb-2">
+ 
+								</div>
+								<div>
+									<?php if (isset($colors) && !empty($colors)): ?>
+										<div class="product-colors" style="margin: 10px;">
+											<label>Chọn màu sắc:</label>
+											<div class="color-options">
+												<?php foreach ($colors as $color): ?>
+													<div class="color-option">
+														<input class="color-radio" type="radio" name="color[<?php echo $pro->product_id; ?>]" id="color_<?php echo $color->color_name; ?>" value="<?php echo $color->color_name; ?>">
+														<label class="color-label" for="color_<?php echo $color->color_name; ?>" title="<?php echo $color->color_name; ?>">
+															<span class="color-dot" style="background-color: <?php echo $color->color_name; ?>"></span>
+															<span class="color-name"><?php echo $color->color_name; ?></span>
+														</label>
+													</div>
+												<?php endforeach; ?>
+											</div>
+										</div>
+									<?php endif; ?>
+								</div>
+								</div>
 								<img src="images/product-details/rating.png" alt="" />
 								<span>
 									<span><?php echo number_format($pro->price,0,',','.') ?>VND</span><br/>
@@ -397,3 +428,61 @@
 			</div>
 		</div>
 	</section>
+	<style>
+	.color-options {
+        display: flex;
+		gap: 10px;
+    }
+    .product-colors {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: start;
+        gap: 10px;
+    }
+
+    .color-option {
+        position: relative;
+    }
+
+    .color-radio {
+        display: none;
+    }
+
+    .color-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .color-dot {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        border: 2px solid #ddd;
+        transition: border-color 0.3s;
+    }
+
+    .color-name {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 12px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        white-space: nowrap;
+    }
+
+    .color-radio:checked + .color-label .color-dot {
+        border-color: #000;
+    }
+
+    .color-label:hover .color-name {
+        opacity: 1;
+    }
+</style>
