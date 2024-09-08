@@ -241,7 +241,7 @@ class OnlineCheckOutController extends CI_Controller
                 redirect(base_url('/thanks'));
             } else {
                 $this->session->set_flashdata('error', 'Xác nhận thanh toán nhận hàng thất bại');
-                redirect(base_url('/checkout'));
+                redirect(base_url('/gio-hang'));
             }
         } else {
             $this->checkout();
@@ -290,48 +290,95 @@ class OnlineCheckOutController extends CI_Controller
                 // Ghi log chi tiết lỗi
                 error_log('MoMo Error: ' . print_r($jsonResult, true));
                 $this->session->set_flashdata('error', 'Có lỗi xảy ra trong quá trình thanh toán MoMo.');
-                redirect(base_url('/checkout'));
+                redirect(base_url('/gio-hang'));
             }
         } elseif (isset($_POST['stripeToken'])) {
-            
-            \Stripe\Stripe::setApiKey('sk_test_51Pkc6WRw8xguDrzhVxInQQUyqz7Ef0vHDM80nhX37M8stKwer5YNysj7OsX0C5vnOpKpfJAeMZf7rP06nCdx1n2600TO2ugFue'); // Thay YOUR_STRIPE_SECRET_KEY bằng khóa bí mật của bạn
-            header('Content-Type: application/json');
-            try {
-                $checkout_session = \Stripe\Checkout\Session::create([
-                    'payment_method_types' => ['card'], // Các phương thức thanh toán hỗ trợ
-                    'line_items' => [[
-                        'price_data' => [
-                            'currency' => 'vnd',
-                            'product_data' => [
-                                'name' => 'Tên sản phẩm',
+            $this->form_validation->set_rules('email', 'Email', 'trim|required', ['required' => 'Bạn chưa điền %s']);
+            $this->form_validation->set_rules('phone', 'Phone', 'trim|required', ['required' => 'Bạn chưa điền %s']);
+            $this->form_validation->set_rules('name', 'Name', 'trim|required', ['required' => 'Bạn chưa điền %s']);
+            $this->form_validation->set_rules('address', 'Address', 'trim|required', ['required' => 'Bạn chưa điền %s']);
+            if ($this->form_validation->run() == TRUE) {
+                $email = $this->input->post('email');
+                    $phone = $this->input->post('phone');
+                    $name = $this->input->post('name');
+                    $address = $this->input->post('address');
+                    $data = [
+                        'name' => $name,
+                        'email' => $email,
+                        'method' => 'cod',
+                        'address' => $address,
+                        'phone' => $phone,
+                    ];
+
+                    $this->load->model('LoginModel');
+                    $this->load->model('ProductModel'); // Load thêm model Sản phẩm
+
+                    $result = $this->LoginModel->NewShipping($data);
+
+                $order_code = rand(00, 9999);
+                $customer_id = $this->session->userdata('LoggedInCustomer');
+                
+                $data_order = [
+                    'order_code' => $order_code,
+                    'ship_id' => $result, // Nếu có thông tin vận chuyển
+                    'status' => 1, // Trạng thái đơn hàng chờ thanh toán
+                    'customer_id' => $customer_id['customer_id'],
+                ];
+                var_dump($data_order);
+                $insert_order = $this->LoginModel->insert_order($data_order);
+                $order_id = $this->db->insert_id();
+        
+                // Lưu chi tiết đơn hàng
+                foreach ($this->cart->contents() as $items) {
+                    $color_id = $this->IndexModel->getColorIdByNameAndProductId($items['options']['color_name'], $items['id']);
+                    $size_id = $this->IndexModel->getSizeIdByNameAndProductId($items['options']['size_name'], $items['id']);
+        
+                    $data_order_details = [
+                        'order_code' => $order_code,
+                        'product_id' => $items['id'],
+                        'quantity' => $items['qty'],
+                        'order_id' => $order_id,
+                        'product_color_id' => $color_id,
+                        'product_size_id' => $size_id,
+                    ];
+                    $this->LoginModel->insert_order_details($data_order_details);
+                }
+
+                \Stripe\Stripe::setApiKey('sk_test_51Pkc6WRw8xguDrzhVxInQQUyqz7Ef0vHDM80nhX37M8stKwer5YNysj7OsX0C5vnOpKpfJAeMZf7rP06nCdx1n2600TO2ugFue'); // Thay YOUR_STRIPE_SECRET_KEY bằng khóa bí mật của bạn
+                header('Content-Type: application/json');
+                try {
+                    $checkout_session = \Stripe\Checkout\Session::create([
+                        'payment_method_types' => ['card'], // Các phương thức thanh toán hỗ trợ
+                        'line_items' => [[
+                            'price_data' => [
+                                'currency' => 'vnd',
+                                'product_data' => [
+                                    'name' => 'Tên sản phẩm',
+                                ],
+                                'unit_amount' => $total, 
                             ],
-                            'unit_amount' => 200000, // Giá sản phẩm tính bằng cent
-                        ],
-                        'quantity' => 1,
-                    ]],
-                    'mode' => 'payment',
-                    'success_url' => base_url('/thanks') , // Trang redirect khi thanh toán thành công
-                    'cancel_url' => base_url('/thanks'),   // Trang redirect khi hủy thanh toán
-                ]);
-                header("Location: " . $checkout_session->url);
-                exit();
-            } catch (\Stripe\Exception\CardException $e) {
-                // Xử lý lỗi thẻ
-                $this->session->set_flashdata('error', 'Lỗi thanh toán: ' . $e->getMessage());
-                redirect(base_url('/gio-hang'));
-            } catch (\Exception $e) {
-                // Xử lý lỗi chung
-                $this->session->set_flashdata('error', 'Lỗi thanh toán: ' . $e->getMessage());
+                            'quantity' => 1,
+                        ]],
+                        'mode' => 'payment',
+                        'success_url' => base_url('/thanks') , 
+                        'cancel_url' => base_url('/thanks'),  
+                    ]); 
+                    header("Location: " . $checkout_session->url);
+                    exit();
+                } catch (\Stripe\Exception\CardException $e) {
+                    // Xử lý lỗi thẻ
+                    $this->session->set_flashdata('error', 'Lỗi thanh toán: ' . $e->getMessage());
+                    redirect(base_url('/gio-hang'));
+                } catch (\Exception $e) {
+                    // Xử lý lỗi chung
+                    $this->session->set_flashdata('error', 'Lỗi thanh toán: ' . $e->getMessage());
+                    redirect(base_url('/gio-hang'));
+                }
+            } else {
+                $this->session->set_flashdata('error', 'Xác nhận thanh toán nhận hàng thất bại! <br/> vui lòng điền đẩy đủ thông tin');
                 redirect(base_url('/gio-hang'));
             }
         }
-    }
-
-    private function processOrder($charge)
-    {
-        // Logic để lưu thông tin đơn hàng vào cơ sở dữ liệu
-        // Bạn có thể sử dụng logic tương tự như trong phần COD
-        // ...
     }
 
     public function checkout()
@@ -347,7 +394,7 @@ class OnlineCheckOutController extends CI_Controller
             $this->load->view('pages/template/header', $this->data);
 
             // $this->load->view('pages/template/slider');
-            $this->load->view('pages/checkout');
+            $this->load->view('pages/gio-hang');
             $this->load->view('pages/template/footer');
         } else {
             redirect(base_url() . 'gio-hang');

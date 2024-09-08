@@ -263,7 +263,7 @@
         var checkoutButton = document.getElementById('checkout-button');
 
         checkoutButton.addEventListener('click', function() {
-            fetch('/create-checkout-session.php', {
+            fetch('<?php echo base_url('online-checkout'); ?>', {
                 method: 'POST',
             })
             .then(function(response) {
