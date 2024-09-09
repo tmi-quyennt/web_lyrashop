@@ -1,4 +1,4 @@
-<div class ='container'>
+<div class ='mx-auto pb-4' style="width: 1440px;">
     <div class="card">
     <div class="card-header">
         Thêm danh mục 

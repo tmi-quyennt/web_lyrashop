@@ -28,3 +28,13 @@ $(document).ready(function(){
 		});
 	});
 });
+document.addEventListener('DOMContentLoaded', function () {
+	var toast = document.getElementById('toast');
+	if (toast) {
+		toast.classList.add('toast-show');
+		// Ẩn toast sau 5 giây
+		setTimeout(function () {
+			toast.classList.remove('toast-show');
+		}, 3000);
+	}
+});

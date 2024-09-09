@@ -2536,3 +2536,33 @@ h2.title {
 }
 
 
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1050;
+  min-width: 250px;
+  padding: 15px;
+  border-radius: 4px;
+  color: #fff;
+  background-color: #333;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s, visibility 0.5s, transform 0.5s ease-in-out;
+  transform: translateY(-100%);
+}
+
+.toast-success {
+  background-color: #5cb85c; /* Màu xanh thành công */
+}
+
+.toast-danger {
+  background-color: #d9534f; /* Màu đỏ lỗi */
+}
+
+.toast-show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}

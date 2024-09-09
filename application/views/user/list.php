@@ -1,4 +1,4 @@
-<div class ='container'>
+<div class ='mx-auto pb-4' style="width: 1440px;">
     <div class="card">
     <div class="card-header">
         List User
@@ -15,7 +15,7 @@
             }
     ?> 
     <div class="card-body">
-        <a href="<?php echo base_url('user/create') ?>" class="btn btn-primary">Add User</a>
+        <a href="<?php echo base_url('user/create') ?>" class="btn btn-primary mb-4">Add User</a>
             <table class="table table-striped">
         <thead>
             <tr>
@@ -25,6 +25,7 @@
             <th scope="col">Password</th>
             <!-- <th scope="col">Image</th> -->
             <th scope="col">Status</th>
+            <th scope="col">Action</th>
             </tr>
         </thead>
         <tbody>

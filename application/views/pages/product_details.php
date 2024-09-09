@@ -49,8 +49,6 @@
 				<div class="col-sm-9 padding-right">
                     <?php
                     foreach($product_details as $key => $pro){
-
-                    
                     ?>
 					<div class="product-details"><!--product-details-->
 						<div class="col-sm-5">
@@ -78,8 +76,41 @@
 								<img src="images/product-details/new.jpg" class="newarrival" alt="" />
 								<h2><?php echo $pro->title ?></h2>
                                 <input type="hidden" value="<?php echo $pro->product_id ?>" name="product_id">
-
-
+							
+								<!--  show information size and colors from database -->
+								<div class="size-color">
+									<div class="size">
+										<label>Kích thước</label>
+										<select name="size" class="form-control" style="width: 60%;">
+											<option value="" disabled selected>Chọn kích thước</option>
+											<?php foreach ($sizes as $size): ?>
+												<option value="<?php echo $size->size_name; ?>"><?php echo $size->size_name; ?></option>
+											<?php endforeach; ?>
+										</select>
+									</div>
+									<div class="color">
+									<div class="product-colors mb-2">
+ 
+								</div>
+								<div>
+									<?php if (isset($colors) && !empty($colors)): ?>
+										<div class="product-colors" style="margin: 10px;">
+											<label>Chọn màu sắc:</label>
+											<div class="color-options">
+												<?php foreach ($colors as $color): ?>
+													<div class="color-option">
+														<input class="color-radio" type="radio" name="color[<?php echo $pro->product_id; ?>]" id="color_<?php echo $color->color_name; ?>" value="<?php echo $color->color_name; ?>">
+														<label class="color-label" for="color_<?php echo $color->color_name; ?>" title="<?php echo $color->color_name; ?>">
+															<span class="color-dot" style="background-color: <?php echo $color->color_name; ?>"></span>
+															<span class="color-name"><?php echo $color->color_name; ?></span>
+														</label>
+													</div>
+												<?php endforeach; ?>
+											</div>
+										</div>
+									<?php endif; ?>
+								</div>
+								</div>
 								<img src="images/product-details/rating.png" alt="" />
 								<span>
 									<span><?php echo number_format($pro->price,0,',','.') ?>VND</span><br/>
@@ -269,23 +300,33 @@
 								<div class="col-sm-12">
 									<ul>
 										<li><a href=""><i class="fa fa-user"></i>Quyên User</a></li>
-										<li><a href=""><i class="fa fa-clock-o"></i>12:41 AM</a></li>
-										<li><a href=""><i class="fa fa-calendar-o"></i>30 AUG 2024</a></li>
+										<div class="text-muted small mb-2">
+												<i class="fa fa-clock-o"></i> 12:41 AM
+												<i class="fa fa-calendar-o ml-2"></i> 30 AUG 2024
+											</div>
 									</ul>
 									<p>Áo baby tee phối ren thêu tim của LYRA thật sự rất xinh! Chất liệu cotton mềm mại, thoáng khí, rất thoải mái khi mặc. Phần ren và thêu tim ở cổ áo tạo điểm nhấn rất đáng yêu. Tôi hoàn toàn hài lòng và chắc chắn sẽ mua thêm các màu khác.</p>
-									<p><b>Viết đánh giá của bạn:</b></p>
-									
-									<form action="#">
-										<span>
-											<input type="text" placeholder="Họ và tên"/>
-											<input type="email" placeholder="Địa chỉ"/>
-										</span>
-										<textarea name="" ></textarea>
-										<b>Đánh giá: </b> <img src="images/product-details/rating.png" alt="" />
-										<button type="button" class="btn btn-default pull-right">
-											Lưu
-										</button>
-									</form>
+									<div class="review-form-box p-4 bg-white rounded shadow-sm">
+										<h4 class="mb-3 mt-5">Viết đánh giá của bạn</h4>
+										<form action="#">
+											<div class="form-row">
+												<div class="form-group col-md-6">
+													<input type="text" class="form-control" placeholder="Họ và tên"/>
+												</div>
+												<div class="form-group col-md-6">
+													<input type="email" class="form-control" placeholder="Địa chỉ email"/>
+												</div>
+											</div>
+											<div class="form-group">
+												<textarea class="form-control" rows="4" placeholder="Nhập đánh giá của bạn"></textarea>
+											</div>
+											<div class="form-group">
+												<label class="mr-2"><b>Đánh giá:</b></label>
+												<img src="images/product-details/rating.png" alt="rating" />
+											</div>
+											<button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+										</form>
+									</div>
 								</div>
 							</div>
 							
@@ -387,3 +428,61 @@
 			</div>
 		</div>
 	</section>
+	<style>
+	.color-options {
+        display: flex;
+		gap: 10px;
+    }
+    .product-colors {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: start;
+        gap: 10px;
+    }
+
+    .color-option {
+        position: relative;
+    }
+
+    .color-radio {
+        display: none;
+    }
+
+    .color-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .color-dot {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        border: 2px solid #ddd;
+        transition: border-color 0.3s;
+    }
+
+    .color-name {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 12px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        white-space: nowrap;
+    }
+
+    .color-radio:checked + .color-label .color-dot {
+        border-color: #000;
+    }
+
+    .color-label:hover .color-name {
+        opacity: 1;
+    }
+</style>

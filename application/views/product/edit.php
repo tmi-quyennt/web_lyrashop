@@ -148,8 +148,51 @@
             </div>
         </div>
 
+        <div class="d-flex">
+                    <div class="form-group" style="margin-right: 20px;">
+                        <label for="exampleFormControlSelect1">Kích thước</label>
+                        <div id="size-container" style="margin-bottom: 10px;">
+                            <?php foreach ($sizes as $size): ?>
+                                <div class="size-input" style="margin-bottom: 10px;">
+                                    <input type="text" name="sizes[]" class="form-control" placeholder="Nhập kích thước" value="<?php echo $size->size_name; ?>">
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <button type="button" class="btn btn-secondary" id="add-size">Thêm kích thước</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="exampleFormControlSelect1">Màu sắc</label>
+                        <div id="color-container" style="margin-bottom: 10px;">
+                            <?php foreach ($colors as $color): ?>
+                                <div class="color-input" style="margin-bottom: 10px;">
+                                    <input type="text" name="colors[]" class="form-control" placeholder="Nhập màu sắc" value="<?php echo $color->color_name; ?>">
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <button type="button" class="btn btn-secondary" id="add-color">Thêm màu sắc</button>
+                    </div>
+                </div>
+
         <button type="submit" class="btn btn-primary">Cập nhật</button>
         </form>
     </div>
     </div>
 </div>
+<script>
+    document.getElementById('add-size').addEventListener('click', function() {
+        var sizeContainer = document.getElementById('size-container');
+        var newSizeInput = document.createElement('div');
+        newSizeInput.className = 'size-input';
+        newSizeInput.innerHTML = '<input type="text" name="sizes[]" class="form-control" placeholder="Nhập kích thước" style="margin-bottom: 10px;">';
+        sizeContainer.appendChild(newSizeInput);
+    });
+
+    document.getElementById('add-color').addEventListener('click', function() {
+        var colorContainer = document.getElementById('color-container');
+        var newColorInput = document.createElement('div');
+        newColorInput.className = 'color-input';
+        newColorInput.innerHTML = '<input type="text" name="colors[]" class="form-control" placeholder="Nhập màu sắc" style="margin-bottom: 10px;">';
+        colorContainer.appendChild(newColorInput);
+    });
+</script>

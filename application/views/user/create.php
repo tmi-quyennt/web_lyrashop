@@ -1,10 +1,10 @@
-<div class ='container'>
+<div class ='mx-auto pb-4' style="width: 1440px;">
     <div class="card">
     <div class="card-header">
         Add User
     </div>
     <div class="card-body">
-    <a href="<?php echo base_url('user/list') ?>" class="btn btn-primary">List User</a>
+    <a href="<?php echo base_url('user/list') ?>" class="btn btn-primary mb-2">List User</a>
 
     <?php
         if($this->session->flashdata('success')){

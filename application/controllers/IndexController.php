@@ -54,6 +54,9 @@ class IndexController extends CI_Controller
 	{
 		$this->data['product_details'] = $this->IndexModel->getProductDetails($id);
 		$this->data['title'] = $this->IndexModel->getProductTitle($id);
+		$this->data['sizes'] = $this->IndexModel->getProductSizes($id);
+		$this->data['colors'] = $this->IndexModel->getProductColors($id);
+		
 		$this->config->config["pageTitle"] = $this->data['title'];
 
 		$this->load->view('pages/template/header', $this->data);
@@ -106,8 +109,12 @@ class IndexController extends CI_Controller
 	{
 		$product_id = $this->input->post('product_id');
 		$quantity = $this->input->post('quantity');
+		$color_name = $this->input->post('color')[$product_id] ?? null;
+		$size_name = $this->input->post('size');
+		
+		
 		$this->data['product_details'] = $this->IndexModel->getProductDetails($product_id);
-
+	
 		// Lấy chi tiết sản phẩm từ cơ sở dữ liệu
 		if (!empty($this->data['product_details'])) {
 			$product = $this->data['product_details'][0]; // Giả sử getProductDetails trả về một mảng với chi tiết sản phẩm
@@ -128,12 +135,18 @@ class IndexController extends CI_Controller
 			// Nếu sản phẩm chưa có trong giỏ hàng, kiểm tra số lượng và thêm vào giỏ
 			if (!$product_in_cart) {
 				if ($product->quantity >= $quantity) {
+
 					$cart = array(
 						'id'      => $product->product_id,
 						'qty'     => $quantity,
 						'price'   => $product->price,
 						'name'    => $product->title,
-						'options' => array('image' => $product->image, 'in_stock' => $product->quantity)
+						'options' => array(
+							'image' => $product->image,
+							'in_stock' => $product->quantity,
+							'color_name' => $color_name, // Lưu color_id vào giỏ hàng
+							'size_name' => $size_name,	  
+						)
 					);
 					$this->cart->insert($cart);
 					$this->session->set_flashdata('success', 'Sản phẩm đã được thêm vào giỏ hàng!');
@@ -154,25 +167,56 @@ class IndexController extends CI_Controller
 	{
 		$rowid = $this->input->post('rowid');
 		$quantity = $this->input->post('quantity');
-		foreach ($this->cart->contents() as $items) {
-			if ($rowid == $items['rowid']) {
-				if ($quantity < $items['options']['in_stock']) {
-					$cart = array(
-						'rowid'   => $rowid,
-						'qty'     => $quantity,
-					);
-				} else {
-					$cart = array(
-						'rowid'   => $rowid,
-						'qty'     => $items['options']['in_stock'],
-					);
+		$item = $this->cart->get_item($rowid);
+	
+		if ($item) {
+			if ($quantity <= $item['options']['in_stock']) {
+            // Dữ liệu cập nhật
+            $data = array(
+                'rowid'   => $rowid,
+                'qty'     => $quantity,
+            );
+				$this->cart->update($data);
+				$this->session->set_flashdata('success', 'Cập nhật số lượng thành công');
+				echo json_encode(['success' => true]);
+			} else {
+				echo json_encode(['success' => false, 'message' => 'Số lượng vượt quá tồn kho']);
+			}
+		} else {
+			echo json_encode(['success' => false, 'message' => 'Không tìm thấy sản phẩm trong giỏ hàng']);
+		}
+	}
+	public function update_cart_size_color()
+	{
+		$rowid = $this->input->post('rowid');
+		$size_id = $this->input->post('size');
+		$color_id = $this->input->post('color');
+		$item = $this->cart->get_item($rowid);
+
+		if ($item) {
+			// Cập nhật kích thước và màu sắc mà không thay đổi số lượng
+			$updated_options = array();
+
+			// Giữ nguyên số lượng
+			$updated_options['size_id'] = isset($size_id) ? $size_id : $item['options']['size_id'];
+			$updated_options['color_id'] = isset($color_id) ? $color_id : $item['options']['color_id'];
+			foreach ($item['options'] as $key => $value) {
+				if (!isset($updated_options[$key])) {
+					$updated_options[$key] = $value;
 				}
 			}
+			$data = array(
+				'rowid' => $rowid,
+				'options' => $updated_options
+			);
+			$this->cart->update($data);
+			$this->session->set_flashdata('success', 'Cập nhật kích thước và màu sắc thành công');
+			echo json_encode(['success' => true]);
+		} else {
+			echo json_encode(['success' => false, 'message' => 'Không tìm thấy sản phẩm trong giỏ hàng']);
 		}
-		$this->cart->update($cart);
-		redirect(base_url() . 'gio-hang', 'refresh');
-		redirect($_SERVER['HTTP_REFERER']);
 	}
+
 
 	public function delete_all_cart()
 	{
@@ -214,12 +258,12 @@ class IndexController extends CI_Controller
 				$password = $this->input->post('password');
 				$this->load->model('LoginModel');
 				$result = $this->LoginModel->checkLoginCustomer($email, $password);
-
 				if (count($result) > 0) {
 					$session_array = array(
 						'id' => $result[0]->id,
 						'username' => $result[0]->name,
 						'email' => $result[0]->email,
+						'customer_id' => $result[0]->customer_id // Lưu customer_id vào session
 					);
 					$this->session->set_userdata('LoggedInCustomer', $session_array);
 					$this->session->set_flashdata('success', 'Đăng nhập thành công');

@@ -1,25 +1,9 @@
--- phpMyAdmin SQL Dump
--- version 5.2.0
--- https://www.phpmyadmin.net/
---
--- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th9 01, 2024 lúc 07:17 PM
--- Phiên bản máy phục vụ: 10.4.27-MariaDB
+
 -- Phiên bản PHP: 7.4.33
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Cơ sở dữ liệu: `web_lyrashop_phanquyen`
---
 
 -- --------------------------------------------------------
 
@@ -119,19 +103,6 @@ CREATE TABLE `orders` (
 -- Đang đổ dữ liệu cho bảng `orders`
 --
 
-INSERT INTO `orders` (`order_id`, `order_code`, `status`, `ship_id`, `order_date`, `customer_id`) VALUES
-(8, '8745', 2, 10, '2024-07-27 10:52:52', 7),
-(9, '5828', 2, 11, '2023-12-30 12:41:23', 7),
-(12, '8762', 2, 14, '2024-09-01 10:52:52', 7),
-(13, '523', 3, 15, '2024-09-01 10:52:52', 7),
-(16, '3890', 2, 18, '2024-09-01 10:52:52', 8),
-(20, '8951', 2, 22, '2024-09-01 10:52:52', 8),
-(44, '3535', 2, 45, '2024-09-01 13:51:31', 8),
-(45, '9680', 1, 46, '2024-09-01 13:55:46', 8),
-(64, '9145', 1, 65, '2024-09-01 14:54:53', 11),
-(65, '5641', 1, 66, '2024-09-01 16:42:05', 11),
-(77, '5300', 1, 91, '2024-09-01 23:46:45', 11);
-
 -- --------------------------------------------------------
 
 --
@@ -149,20 +120,6 @@ CREATE TABLE `order_details` (
 --
 -- Đang đổ dữ liệu cho bảng `order_details`
 --
-
-INSERT INTO `order_details` (`order_detail_id`, `order_code`, `product_id`, `quantity`, `order_id`) VALUES
-(6, '8745', 40, 1, 8),
-(7, '5828', 40, 1, 9),
-(14, '8762', 40, 1, 12),
-(15, '523', 40, 1, 13),
-(18, '3890', 48, 1, 16),
-(23, '8951', 40, 1, 20),
-(33, '3535', 44, 1, 44),
-(34, '9680', 45, 1, 45),
-(52, '9145', 48, 1, 64),
-(53, '5641', 46, 1, 65),
-(54, '5641', 48, 1, 65),
-(55, '5300', 48, 1, 77);
 
 -- --------------------------------------------------------
 
@@ -196,7 +153,6 @@ INSERT INTO `products` (`product_id`, `title`, `description`, `image`, `status`,
 (51, 'Test', 'Áo vintage', '1725108564phan-mem-quan-ly-hoc-sinh-hoc-vien.jpg', 1, 10, 11, 'test', 5, '350.000');
 
 -- --------------------------------------------------------
-
 --
 -- Cấu trúc bảng cho bảng `shipping`
 --
@@ -303,7 +259,30 @@ INSERT INTO `shipping` (`ship_id`, `name`, `phone`, `address`, `email`, `method`
 (91, 'Phúc', '0328790256', 'Dương Nội, Hà Đông', 'duongvanphuc169@gmail.com', 'cod');
 
 -- --------------------------------------------------------
+CREATE TABLE product_colors (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT,
+    color_name varchar(100)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- Cấu trúc bảng cho bảng `sizes`
+-- Tạo bảng product_sizes để liên kết products và sizes
+CREATE TABLE `product_sizes` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `product_id` INT,
+    `size_name` varchar(100)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE `order_details`
+ADD COLUMN `product_color_id` INT,
+ADD COLUMN `product_size_id` INT;
+
+ALTER TABLE `order_details`
+ADD CONSTRAINT `fk_order_details_color` FOREIGN KEY (`product_color_id`) REFERENCES `product_colors`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Thêm khóa liên kết tới bảng product_sizes
+ALTER TABLE `order_details`
+ADD CONSTRAINT `fk_order_details_size` FOREIGN KEY (`product_size_id`) REFERENCES `product_sizes`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 --
 -- Cấu trúc bảng cho bảng `user`
 --
@@ -454,7 +433,6 @@ ALTER TABLE `order_details`
   ADD CONSTRAINT `fk_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `order_details_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`),
   ADD CONSTRAINT `order_details_ibfk_2` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`);
-
 --
 -- Các ràng buộc cho bảng `products`
 --
@@ -463,6 +441,10 @@ ALTER TABLE `products`
   ADD CONSTRAINT `products_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `categories` (`category_id`);
 COMMIT;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+ALTER TABLE `product_colors`
+  ADD CONSTRAINT `fk_product_colors_product`FOREIGN KEY (`product_id`) REFERENCES `products`(`product_id`)ON DELETE CASCADE ON UPDATE CASCADE;
+COMMIT;
+
+ALTER TABLE `product_sizes`
+  ADD CONSTRAINT `fk_product_sizes_product`FOREIGN KEY (`product_id`) REFERENCES `products`(`product_id`)ON DELETE CASCADE ON UPDATE CASCADE;
+COMMIT;

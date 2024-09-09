@@ -13,7 +13,11 @@ class ProductController extends CI_Controller {
 			redirect(base_url('/login'));
 		}
 	}
-
+	public function get_colors($product_id) {
+		$this->load->model('ProductModel');
+		$colors = $this->ProductModel->getProductColors($product_id);
+		echo json_encode($colors);
+	}
 	public function index()
 	{
 		$this->checkLogin();
@@ -21,7 +25,12 @@ class ProductController extends CI_Controller {
         $this->load->view('admin_template/navbar');
 		
 		$this->load->model('ProductModel');
-		$data['product'] = $this->ProductModel->selectAllProduct();
+		$data['allproduct'] = $this->ProductModel->getAllProducts();
+
+		foreach ($data['allproduct'] as $product) {
+			// var_dump($product->product_id);
+			$product->sizes = $this->ProductModel->getProductSizes($product->product_id);
+		}
 
 		$this->load->view('product/list',$data);
 		$this->load->view('admin_template/footer');
@@ -44,7 +53,7 @@ class ProductController extends CI_Controller {
 	
 	public function store(){
 		$this->form_validation->set_rules('title', 'Title', 'trim|required',['required' => 'Bạn chưa điền %s']);
-		$this->form_validation->set_rules('price', 'Price', 'trim|required',['required' => 'Bạn chưa điền %s']);
+		$this->form_validation->set_rules('price', 'Price', 'trim|required',['requi	red' => 'Bạn chưa điền %s']);
 		$this->form_validation->set_rules('slug', 'Slug', 'trim|required',['required' => 'Bạn chưa điền %s']);
 		$this->form_validation->set_rules('quantity', 'Quantity', 'trim|required',['required' => 'Bạn chưa điền %s']);
         $this->form_validation->set_rules('description', 'Description', 'trim|required',['required' => 'Bạn chưa điền %s']);
@@ -81,6 +90,23 @@ class ProductController extends CI_Controller {
 						'status' => $this->input->post('status'),
 						'image' => $pro_filename,
 						];
+						$this->load->model('ProductModel');
+						$product_id = $this->ProductModel->insertProduct($data); // Lưu sản phẩm và lấy ID
+						
+						$sizes = $this->input->post('sizes');
+						if (!empty($sizes)) {
+							foreach ($sizes as $size_id) {
+								$this->ProductModel->insertProductSize($product_id, $size_id);
+							}
+						}
+
+						// Lưu màu sắc
+						$colors = $this->input->post('colors');
+						if (!empty($colors)) {
+							foreach ($colors as $color_id) {
+								$this->ProductModel->insertProductColor($product_id, $color_id);
+							}
+						}
 					$this->load->model('ProductModel');
 					$this->ProductModel->insertProduct($data);
 					$this->session->set_flashdata('success','Thêm sản phẩm thành công');
@@ -110,6 +136,10 @@ class ProductController extends CI_Controller {
 		$this->load->model('ProductModel');
 		$data['product'] = $this->ProductModel->selectProductById($id);
 
+		$data['sizes'] = $this->ProductModel->getProductSizes($id);
+		$data['colors'] = $this->ProductModel->getProductColors($id);
+
+		
 		$this->load->view('product/edit',$data);
 		$this->load->view('admin_template/footer');
 	}
@@ -172,6 +202,31 @@ class ProductController extends CI_Controller {
 
 			$this->load->model('ProductModel');
 			$this->ProductModel->updateProduct($id,$data);
+
+			// Cập nhật sản phẩm
+			$this->load->model('ProductModel');
+			$this->ProductModel->updateProduct($id, $data);
+	
+			// Xóa tất cả kích thước và màu sắc cũ
+			$this->db->delete('product_sizes', ['product_id' => $id]);
+			$this->db->delete('product_colors', ['product_id' => $id]);
+	
+			// Lưu kích thước mới
+			$sizes = $this->input->post('sizes');
+			if (!empty($sizes)) {
+				foreach ($sizes as $size_name) {
+					$this->ProductModel->insertProductSize($id, $size_name);
+				}
+			}
+	
+			// Lưu màu sắc mới
+			$colors = $this->input->post('colors');
+			if (!empty($colors)) {
+				foreach ($colors as $color_name) {
+					$this->ProductModel->insertProductColor($id, $color_name);
+				}
+			}
+			
 			$this->session->set_flashdata('success','Cập nhật sản phẩm thành công');
 			redirect(base_url('product/list'));
 
@@ -188,7 +243,26 @@ class ProductController extends CI_Controller {
 			$this->session->set_flashdata('success','Xóa sản phẩm thành công');
 			redirect(base_url('product/list'));
 		}
+		
+		public function details($product_id) {
+			$this->load->model('ProductModel');
+			$data['product_details'] = $this->ProductModel->getProductDetails($product_id);
+			$data['sizes'] = $this->ProductModel->getProductSizes($product_id);
+			$data['colors'] = $this->ProductModel->getProductColors($product_id);
+			
+			// Lấy thông tin giỏ hàng
+			$cart = $this->cart->contents();
+			$data['cart_item'] = null;
 
+			foreach ($cart as $item) {
+				if ($item['id'] == $product_id) {
+					$data['cart_item'] = $item; // Lưu thông tin sản phẩm trong giỏ hàng
+					break;
+				}
+			}
+
+			$this->load->view('pages/product_details', $data);
+		}
 		
 	
 }

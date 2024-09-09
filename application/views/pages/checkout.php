@@ -18,6 +18,7 @@
 							<td class="image">Sản phẩm</td>
 							<td class="price">Giá tiền</td>
 							<td class="quantity">Số lượng</td>
+							<td class="color">Màu sắc</td>
 							<td class="total">Tổng tiền</td>
 							<td></td>
 						</tr>
@@ -51,6 +52,23 @@
 
 										</div>
 									</form>
+								</td>
+								<td class="cart_color">
+									<?php if (isset($items['options']['colors']) && !empty($items['options']['colors'])): ?>
+										<?php 
+										$selected_color = isset($items['options']['selected_color']) ? $items['options']['selected_color'] : '';
+										$color_name = 'Chưa chọn màu';
+										foreach ($items['options']['colors'] as $color) {
+											if ($color->id == $selected_color) {
+												$color_name = $color->name;
+												break;
+											}
+										}
+										echo $color_name;
+										?>
+									<?php else: ?>
+										Không có thông tin màu sắc
+									<?php endif; ?>
 								</td>
 								<td class="cart_total">
 									<p class="cart_total_price"><?php echo number_format($subtotal, 0, ',', '.') ?>VND</p>

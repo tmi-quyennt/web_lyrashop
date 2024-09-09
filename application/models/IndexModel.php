@@ -13,7 +13,15 @@
         }
 
         public function getAllProduct(){
-            $query = $this->db->get_where('products',['status'=>1]);
+            $this->db->select('products.*, 
+            GROUP_CONCAT(DISTINCT product_sizes.size_name) as sizes, 
+            GROUP_CONCAT(DISTINCT product_colors.color_name) as colors');
+            $this->db->from('products');
+            $this->db->join('product_sizes', 'product_sizes.product_id = products.product_id', 'left');
+            $this->db->join('product_colors', 'product_colors.product_id = products.product_id', 'left');
+            $this->db->where('products.status', 1);
+            $this->db->group_by('products.product_id'); // Nhóm theo product_id để tránh trùng lặp
+            $query = $this->db->get();
             return $query->result();
         }
 
@@ -37,13 +45,45 @@
             return $query->result();
         }
 
+        public function getColorIdByNameAndProductId($color_name, $product_id) {
+            $this->db->select('id');
+            $this->db->from('product_colors');
+            $this->db->where('color_name', $color_name);
+            $this->db->where('product_id', $product_id);
+            $query = $this->db->get();
+            
+            if ($query->num_rows() > 0) {
+                return $query->row()->id; // Trả về id của màu sắc
+            }
+            return null; // Trả về null nếu không tìm thấy
+        }
+        
+        public function getSizeIdByNameAndProductId($size_name, $product_id) {
+            $this->db->select('id');
+            $this->db->from('product_sizes');
+            $this->db->where('size_name', $size_name);
+            $this->db->where('product_id', $product_id);
+            $query = $this->db->get();
+            
+            if ($query->num_rows() > 0) {
+                return $query->row()->id; // Trả về id của kích thước
+            }
+            return null; // Trả về null nếu không tìm thấy
+        }
+
         public function getProductDetails($id){
-            $query = $this->db->select('categories.title as tendanhmuc,products.*,brands.title as tenthuonghieu')
+            $query = $this->db->select('categories.title as tendanhmuc, products.*, brands.title as tenthuonghieu, 
+                GROUP_CONCAT(DISTINCT product_colors.color_name) as colors, 
+                GROUP_CONCAT(DISTINCT product_sizes.size_name) as sizes')
             ->from('categories')
-            ->join('products','products.category_id=categories.category_id')
-            ->join('brands','brands.brand_id=products.brand_id')
-            ->where('products.product_id',$id)
+            ->join('products', 'products.category_id = categories.category_id')
+            ->join('product_colors', 'product_colors.product_id = products.product_id', 'left') // Kết nối với bảng product_colors
+            ->join('product_sizes', 'product_sizes.product_id = products.product_id', 'left') // Kết nối với bảng product_sizes
+            ->join('brands', 'brands.brand_id = products.brand_id')
+            ->where('products.product_id', $id)
+            ->group_by('products.product_id') // Nhóm theo product_id để tránh trùng lặp
             ->get();
+            
             return $query->result();
         }
 
@@ -90,7 +130,23 @@
             ->get();
             return $query->result();
         }
-
+        public function getProductSizes($product_id) {
+            // Lấy kích thước sản phẩm từ bảng product_sizes
+            $this->db->select('size_name');
+            $this->db->from('product_sizes');
+            $this->db->where('product_id', $product_id);
+            $query = $this->db->get();
+            return $query->result(); // Trả về danh sách kích thước
+        }
+    
+        public function getProductColors($product_id) {
+            // Lấy màu sắc sản phẩm từ bảng product_colors
+            $this->db->select('color_name');
+            $this->db->from('product_colors');
+            $this->db->where('product_id', $product_id);
+            $query = $this->db->get();
+            return $query->result(); // Trả về danh sách màu sắc
+        }
         
 
     }

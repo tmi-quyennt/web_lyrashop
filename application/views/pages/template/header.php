@@ -131,14 +131,31 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 						</div>
 					</div>
 					<div class="col-sm-5">
-						<div class="search_box pull-right">
-							<form method="GET" action="<?php echo base_url('tim-kiem') ?>">
-							<input type="text" name="keyword" placeholder="Tìm kiếm sản phẩm...."/>
-							<input type="submit" style="margin:0;color:#fff;" value="Tìm kiếm" class="btn btn-primary" />
+						<form method="GET" action="<?php echo base_url('tim-kiem') ?>" class="d-flex align-items-center">
+							<div class="input-group" style="display: flex;">
+								<input type="text" name="keyword" class="form-control" placeholder="Tìm kiếm sản phẩm..." aria-label="Tìm kiếm sản phẩm">
+								<div class="input-group-append">
+									<button class="btn btn-outline-secondary" type="submit">
+										<i class="fa fa-search"></i>
+									</button>
+								</div>
+							</div>
 						</form>
-						</div>
 					</div>
 				</div>
 			</div>
 		</div><!--/header-bottom-->
 	</header><!--/header-->
+	<style>
+		.input-group {
+			width: 100%;
+		}
+		.btn-outline-secondary {
+			color: #FE980F;
+			border-color: #FE980F;
+		}
+		.btn-outline-secondary:hover {
+			background-color: #FE980F;
+			color: white;
+		}
+</style>
